@@ -1,0 +1,601 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection("blog");
+  
+  // Extract all unique category slugs from existing blog posts
+  const postCategories = allPosts.map((post) => post.data.category.toLowerCase());
+  
+  // Static predefined list to ensure empty category pages still render
+  const defaultCategories = [
+    "freelancing",
+    "startups",
+    "business",
+    "ai",
+    "money",
+    "self-improvement",
+    "psychology",
+  ];
+
+  const uniqueCategories = Array.from(
+    new Set([...postCategories, ...defaultCategories])
+  );
+
+  return uniqueCategories.map((category) => ({
+    params: { category },
+  }));
+}
+
+
+const allPosts = await getCollection("blog");
+
+const category = Astro.params.category ?? "";
+
+const categoryName =
+  category.charAt(0).toUpperCase() + category.slice(1);
+
+const posts = allPosts
+  .filter(
+    (post) =>
+      post.data.category.toLowerCase() === category.toLowerCase()
+  )
+  .sort(
+    (a, b) =>
+      b.data.date.valueOf() - a.data.date.valueOf()
+  );
+
+const categories = [
+  "Freelancing",
+  "Startups",
+  "Business",
+  "AI",
+  "Money",
+  "Self-improvement",
+  "Psychology",
+];
+
+const categoryDescriptions: Record<string, string> = {
+  Freelancing:
+    "Lessons, mistakes and practical ideas from building a freelance career.",
+  Startups:
+    "Ideas, experiments and lessons from building products and businesses.",
+  Business:
+    "Practical thinking about customers, money, strategy and sustainable growth.",
+  AI:
+    "Useful ideas, experiments and lessons about building with AI.",
+  Money:
+    "A practical look at money, independence and building financial freedom.",
+  "Self-improvement":
+    "Ideas for becoming better at your work, habits and everyday life.",
+  Psychology:
+    "Thoughts about people, decisions, motivation and how we work.",
+};
+
+const description =
+  categoryDescriptions[categoryName] ??
+  "Stories, ideas and practical lessons for independent builders.";
+---
+
+<Layout title={`${categoryName} — Independent Society`}>
+  <main class="category-page">
+
+    <!-- HERO -->
+    <section class="category-hero">
+      <div class="category-eyebrow">
+        <span class="dot"></span>
+        <span>CATEGORY</span>
+      </div>
+
+      <div class="category-hero-grid">
+        <div>
+          <h1>{categoryName}</h1>
+          <p>{description}</p>
+        </div>
+
+        <div class="category-count">
+          <strong>{posts.length}</strong>
+          <span>{posts.length === 1 ? "story" : "stories"}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORY NAVIGATION -->
+    <section class="category-navigation">
+      <div class="category-nav-label">EXPLORE CATEGORIES</div>
+      <div class="category-pills">
+        <a href="/blog/" class="category-pill">
+          All stories
+        </a>
+
+        {categories.map((item) => (
+          <a
+            href={`/category/${item.toLowerCase()}/`}
+            class:list={[
+              "category-pill",
+              { active: item.toLowerCase() === category.toLowerCase() },
+            ]}
+          >
+            {item}
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- STORIES LIST -->
+    <section class="category-stories">
+      <div class="category-stories-header">
+        <div class="category-section-number">
+          <span>01</span>
+          <i class="line"></i>
+          <span>STORIES</span>
+        </div>
+        <div class="category-result-count">
+          {posts.length} {posts.length === 1 ? "story" : "stories"}
+        </div>
+      </div>
+
+      {posts.length > 0 ? (
+        <div class="category-list">
+          {posts.map((post, index) => (
+            <a href={`/blog/${post.id}/`} class="category-story">
+              <div class="story-index">
+                {String(index + 1).padStart(2, "0")}
+              </div>
+
+              <div class="story-main">
+                <div class="story-meta">
+                  <span class="cat-tag">{post.data.category}</span>
+                  <span class="sep">•</span>
+                  <span>{post.data.readingTime}</span>
+                </div>
+
+                <h2>{post.data.title}</h2>
+                <p>{post.data.description}</p>
+              </div>
+
+              <div class="story-side">
+                <span class="story-date">
+                  {post.data.date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+                <span class="story-arrow">↗</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="category-empty">
+          <span class="empty-title">Nothing here yet.</span>
+          <p>New stories are coming soon.</p>
+          <a href="/blog/" class="empty-link">Browse all stories →</a>
+        </div>
+      )}
+    </section>
+
+    <!-- BOTTOM CTA -->
+    <section class="category-bottom">
+      <div>
+        <span class="category-bottom-label">INDEPENDENT SOCIETY</span>
+        <h2>Keep exploring.</h2>
+      </div>
+
+      <a href="/blog/" class="category-bottom-link">
+        <span>All stories</span>
+        <span class="arrow">→</span>
+      </a>
+    </section>
+
+  </main>
+</Layout>
+
+<style>
+  /* SCOPED CSS STYLES */
+  .category-page {
+    --bg: #08090d;
+    --text: #f5f5f7;
+    --text-soft: #a5a9b5;
+    --muted: #6f7481;
+    --accent: #8aa7ff;
+    --accent-light: #c2d1ff;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(138, 167, 255, 0.35);
+
+    min-height: 100vh;
+    color: var(--text);
+    background-color: var(--bg);
+    background-image: radial-gradient(
+      circle at 75% 0%,
+      rgba(83, 105, 255, 0.12),
+      transparent 45%
+    );
+  }
+
+  /* HERO */
+  .category-hero {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 120px 24px 80px;
+  }
+
+  .category-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background: rgba(138, 167, 255, 0.08);
+    border: 1px solid rgba(138, 167, 255, 0.2);
+    border-radius: 99px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    margin-bottom: 28px;
+  }
+
+  .category-eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  .category-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 60px;
+    align-items: flex-end;
+  }
+
+  .category-hero h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(48px, 8vw, 110px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    font-weight: 800;
+  }
+
+  .category-hero p {
+    max-width: 620px;
+    margin: 28px 0 0;
+    color: var(--text-soft);
+    font-size: 19px;
+    line-height: 1.6;
+  }
+
+  .category-count {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .category-count strong {
+    color: var(--accent);
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .category-count span {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+  }
+
+  /* NAVIGATION PILLS */
+  .category-navigation {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .category-nav-label {
+    margin-bottom: 16px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+  }
+
+  .category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .category-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-soft);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .category-pill:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
+  }
+
+  .category-pill.active {
+    color: #08090d;
+    border-color: var(--accent);
+    background: var(--accent);
+    font-weight: 700;
+  }
+
+  /* STORIES */
+  .category-stories {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 80px 24px 100px;
+  }
+
+  .category-stories-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+
+  .category-section-number {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+
+  .category-section-number span {
+    color: var(--accent);
+  }
+
+  .category-section-number .line {
+    display: inline-block;
+    width: 30px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .category-result-count {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* STORY ITEM LIST */
+  .category-list {
+    border-top: 1px solid var(--border);
+  }
+
+  .category-story {
+    display: grid;
+    grid-template-columns: 50px 1fr 140px;
+    gap: 32px;
+    align-items: center;
+    padding: 32px 16px;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+  }
+
+  .category-story:hover {
+    background: rgba(138, 167, 255, 0.03);
+    border-color: var(--border-hover);
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .story-index {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .story-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .story-meta .cat-tag {
+    color: var(--accent);
+  }
+
+  .story-meta .sep {
+    opacity: 0.4;
+  }
+
+  .story-main h2 {
+    margin: 8px 0 6px;
+    color: #ffffff;
+    font-size: clamp(22px, 2.5vw, 30px);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    transition: color 0.2s ease;
+  }
+
+  .category-story:hover .story-main h2 {
+    color: var(--accent-light);
+  }
+
+  .story-main p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 680px;
+  }
+
+  .story-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .story-date {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .story-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--muted);
+    font-size: 16px;
+    transition: all 0.2s ease;
+  }
+
+  .category-story:hover .story-arrow {
+    color: #ffffff;
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+
+  /* EMPTY STATE */
+  .category-empty {
+    padding: 80px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .empty-title {
+    display: block;
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .category-empty p {
+    color: var(--muted);
+    margin: 10px 0 20px;
+  }
+
+  .empty-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  /* BOTTOM CTA */
+  .category-bottom {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .category-bottom-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+  }
+
+  .category-bottom h2 {
+    margin: 8px 0 0;
+    font-size: 36px;
+    letter-spacing: -0.04em;
+    color: #ffffff;
+  }
+
+  .category-bottom-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .category-bottom-link .arrow {
+    color: var(--accent);
+    font-size: 20px;
+    transition: transform 0.2s ease;
+  }
+
+  .category-bottom-link:hover .arrow {
+    transform: translateX(4px);
+  }
+
+  /* RESPONSIVE DESIGN */
+  @media (max-width: 768px) {
+    .category-hero-grid {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .category-count {
+      align-items: flex-start;
+      flex-direction: row;
+      gap: 12px;
+    }
+
+    .category-count strong {
+      font-size: 40px;
+    }
+
+    .category-count span {
+      align-self: center;
+      margin-top: 0;
+    }
+
+    .category-story {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 24px 12px;
+    }
+
+    .story-side {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .category-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

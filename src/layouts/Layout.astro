@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+const { title = "Independent Society", description = "Stories for freelancers, founders and small teams building independent businesses.", canonical } = Astro.props;
+const url = canonical ?? Astro.url.href;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={url} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav">
+        <a class="logo" href="/">Independent Society</a>
+        <nav class="nav-links">
+          <a href="/blog/">Stories</a>
+          <a href="/#categories">Categories</a>
+          <a href="/about/">About</a>
+        </nav>
+      </div>
+    </header>
+    <main><slot /></main>
+    <footer>
+      <div class="container">
+        Independent Society — practical stories from freelancers, founders and small teams.
+      </div>
+    </footer>
+  </body>
+</html>

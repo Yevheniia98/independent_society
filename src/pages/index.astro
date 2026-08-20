@@ -1,0 +1,296 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const allPosts = await getCollection("blog");
+const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const featuredPost = sortedPosts[0];
+const recentPosts = sortedPosts.slice(1, 4);
+
+const categories = ["Freelancing", "Startups", "Business", "AI", "Money", "Self-improvement", "Psychology"];
+---
+
+<Layout title="Independent Society — Build work that belongs to you">
+  <main class="home-page">
+
+    <!-- HERO SECTION -->
+    <section class="home-hero">
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          <span class="dot"></span>
+          <span>INDEPENDENT WORK · BUILDING · BUSINESS</span>
+        </div>
+        <h1>Build work that <span class="highlight">belongs to you.</span></h1>
+        <p class="hero-sub">
+          Practical stories, lessons and ideas from freelancers, founders and small teams building independent businesses.
+        </p>
+      </div>
+
+      <div class="hero-card">
+        <div class="card-badge">✦ FEATURED NOTE</div>
+        <h3>One useful story at a time.</h3>
+        <p>Real experiments. Honest lessons. Better ways to work.</p>
+      </div>
+    </section>
+
+    <!-- FEATURED STORY -->
+    {featuredPost && (
+      <section class="featured-section">
+        <div class="section-header">
+          <h2>Featured story</h2>
+          <a href="/blog/" class="see-all">All stories →</a>
+        </div>
+
+        <a href={`/blog/${featuredPost.id}/`} class="featured-card">
+          <div class="featured-meta">
+            <span class="tag">{featuredPost.data.category}</span>
+            <span class="sep">•</span>
+            <span>{featuredPost.data.readingTime}</span>
+          </div>
+          <h3>{featuredPost.data.title}</h3>
+          <p>{featuredPost.data.description}</p>
+          <div class="featured-footer">
+            <span>Read story</span>
+            <span class="arrow">→</span>
+          </div>
+        </a>
+      </section>
+    )}
+
+    <!-- CATEGORIES -->
+    <section id="categories" class="categories-section">
+      <div class="section-header">
+        <h2>Explore</h2>
+      </div>
+
+      <div class="category-grid">
+        {categories.map((cat) => (
+          <a href={`/category/${cat.toLowerCase()}/`} class="cat-card">
+            <span class="cat-name">{cat}</span>
+            <span class="cat-arrow">↗</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+  </main>
+</Layout>
+
+<style>
+  .home-page {
+    --bg: #08090d;
+    --text: #f5f5f7;
+    --text-muted: #858a95;
+    --accent: #8aa7ff;
+    --border: rgba(255, 255, 255, 0.08);
+
+    min-height: 100vh;
+    background-color: var(--bg);
+    background-image: radial-gradient(circle at 50% 0%, rgba(83, 105, 255, 0.12), transparent 50%);
+    color: var(--text);
+    padding-bottom: 120px;
+  }
+
+  /* HERO */
+  .home-hero {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 120px 24px 80px;
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+  }
+
+  .hero-eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .home-hero h1 {
+    font-size: clamp(42px, 6vw, 76px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-weight: 800;
+    margin: 0 0 24px;
+    color: #ffffff;
+  }
+
+  .highlight {
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .hero-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+  }
+
+  .card-badge {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+
+  .hero-card h3 {
+    font-size: 24px;
+    margin: 0 0 12px;
+    color: #ffffff;
+  }
+
+  .hero-card p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* SECTIONS */
+  .featured-section, .categories-section {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 60px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .section-header h2 {
+    font-size: 28px;
+    letter-spacing: -0.03em;
+    margin: 0;
+    color: #ffffff;
+  }
+
+  .see-all {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* FEATURED CARD */
+  .featured-card {
+    display: block;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .featured-card:hover {
+    background: rgba(138, 167, 255, 0.04);
+    border-color: rgba(138, 167, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .featured-meta {
+    display: flex;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .featured-meta .tag {
+    color: var(--accent);
+  }
+
+  .featured-card h3 {
+    font-size: 32px;
+    color: #ffffff;
+    margin: 0 0 16px;
+    letter-spacing: -0.03em;
+  }
+
+  .featured-card p {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0 0 24px;
+  }
+
+  .featured-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* CATEGORY GRID */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .cat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .cat-card:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .cat-arrow {
+    color: var(--text-muted);
+  }
+
+  .cat-card:hover .cat-arrow {
+    color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .home-hero {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+</style>

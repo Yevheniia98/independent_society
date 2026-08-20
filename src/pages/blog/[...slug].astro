@@ -1,0 +1,40 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post) => {
+    // Получаем чистый slug без расширения .md
+    const slug = post.slug || post.id.replace(/\.md$/, "");
+    return {
+      params: { slug },
+      props: { post },
+    };
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout title={`${post.data.title} — Independent Builders`} description={post.data.description}>
+  <article class="container article-wrap">
+    <div class="eyebrow">{post.data.category} · {post.data.readingTime}</div>
+    <h1>{post.data.title}</h1>
+    {post.data.cover && (
+  <img
+    src={post.data.cover}
+    alt={post.data.title}
+    class="cover-image"
+  />
+  )}
+    <p class="article-lead">{post.data.description}</p>
+    <div class="article-meta">
+      {post.data.author} · {post.data.date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+    </div>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Layout>
