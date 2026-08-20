@@ -1,5 +1,5 @@
 ---
-title: "When You Want to Do Everything Yourself"
+title: "Why Senior Soft Engineers Burn Out"
 description: "Why senior engineers (and independent builders) burn out by refusing to ask for help, and how delegation changes everything."
 date: 2026-08-20
 category: "Self-improvement"
