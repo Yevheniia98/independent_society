@@ -1,6 +1,6 @@
 ---
-title: "Why Senior Soft Engineers Burn Out"
-description: "Why senior engineers (and independent builders) burn out by refusing to ask for help, and how delegation changes everything."
+title: "Why Senior Software Engineers Burn Out"
+description: "Why senior software engineers burn out by trying to handle everything alone, and how asking for help and delegating work can make a difference."
 date: 2026-08-20
 category: "Self-improvement"
 author: "Jessica"
@@ -8,9 +8,11 @@ readingTime: "4 min read"
 cover: "/images/image.png"
 ---
 
-Recently, I was watching one of my colleagues and noticed something interesting.
+Recently, I was watching one of my colleagues, a senior software engineer, and noticed something interesting.
 
 After he was promoted from Middle to Senior Engineer, he started working even more. I think he wanted to show that he was really ready for the new position and could handle any task.
+
+At first, I didn't think much about it. But over time, I started to notice something that is common with senior software engineers: burnout can come from trying to solve everything alone.
 
 He almost never asked for help. When a difficult task came up, he tried to solve it himself. If something needed to be designed from scratch, he also took care of it. Even when other people on the team could help, he preferred to try everything by himself first.
 
