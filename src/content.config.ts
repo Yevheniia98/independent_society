@@ -13,6 +13,7 @@ const blog = defineCollection({
     readingTime: z.string().default("5 min read"),
     featured: z.boolean().default(false),
     cover: z.string().optional(),
+    
   }),
 });
 

@@ -47,11 +47,16 @@ const posts = rawPosts
       <section class="grid-wrap">
         <div class="grid" id="posts">
           {posts.map((post) => (
-            <a
-              class="card post"
+            
+             <a class="card post"
               data-search={`${post.data.title} ${post.data.description} ${post.data.category} ${(post.data.tags || []).join(" ")}`}
               href={`/blog/${post.slug}`}
             >
+              {post.data.cover && (
+                <div class="card-image">
+                  <img src={post.data.cover} alt={post.data.title} loading="lazy" />
+                </div>
+              )}
               <div class="card-content">
                 <div class="meta">
                   <span class="category">{post.data.category}</span>
@@ -255,6 +260,26 @@ const posts = rawPosts
     background: linear-gradient(145deg, rgba(138, 167, 255, 0.06), rgba(255, 255, 255, 0.02));
     border-color: var(--border-hover);
     transform: translateY(-3px);
+  }
+
+  /* COVER IMAGE */
+  .card-image {
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  .card.post:hover .card-image img {
+    transform: scale(1.05);
   }
 
   .meta {
