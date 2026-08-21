@@ -21,7 +21,9 @@ const url = canonical ?? Astro.url.href;
   <body>
     <header class="site-header">
       <div class="container nav">
-        <a class="logo" href="/">Independent Society</a>
+        <a class="logo" href="/">
+          <img src="/images/ISG.png" alt="Independent Society" style="height: 50px;" />
+        </a>
         <nav class="nav-links">
           <a href="/blog/">Stories</a>
           <a href="/#categories">Categories</a>
@@ -32,7 +34,7 @@ const url = canonical ?? Astro.url.href;
     <main><slot /></main>
     <footer>
       <div class="container">
-        Independent Society — practical stories from freelancers, founders and small teams.
+        Independent Society — practical stories from freelancers, founders and small teams. 2026
       </div>
     </footer>
   </body>
