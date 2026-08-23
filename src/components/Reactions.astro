@@ -1,0 +1,137 @@
+---
+interface Props {
+  postSlug: string;
+}
+const { postSlug } = Astro.props;
+---
+
+<div class="reactions" data-slug={postSlug}>
+  <button class="reaction-btn" id="like-btn" data-type="like">
+    <span>👍</span>
+    <span id="like-count">0</span>
+  </button>
+  <button class="reaction-btn" id="dislike-btn" data-type="dislike">
+    <span>👎</span>
+    <span id="dislike-count">0</span>
+  </button>
+  <span id="reaction-message" class="reaction-message"></span>
+</div>
+
+<script>
+  import { supabase } from "../lib/supabase";
+
+  const container = document.querySelector(".reactions") as HTMLElement;
+  const slug = container.dataset.slug!;
+  const likeBtn = document.querySelector("#like-btn") as HTMLElement;
+  const dislikeBtn = document.querySelector("#dislike-btn") as HTMLElement;
+  const likeCount = document.querySelector("#like-count") as HTMLElement;
+  const dislikeCount = document.querySelector("#dislike-count") as HTMLElement;
+  const message = document.querySelector("#reaction-message") as HTMLElement;
+
+  async function loadCounts() {
+    const { data } = await supabase
+      .from("reactions")
+      .select("type")
+      .eq("post_slug", slug);
+
+    const likes = data?.filter((r) => r.type === "like").length ?? 0;
+    const dislikes = data?.filter((r) => r.type === "dislike").length ?? 0;
+
+    likeCount.textContent = String(likes);
+    dislikeCount.textContent = String(dislikes);
+  }
+
+  async function highlightUserReaction() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data } = await supabase
+      .from("reactions")
+      .select("type")
+      .eq("post_slug", slug)
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    likeBtn.classList.toggle("active", data?.type === "like");
+    dislikeBtn.classList.toggle("active", data?.type === "dislike");
+  }
+
+  async function react(type: "like" | "dislike") {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      message.textContent = "Please sign in to react.";
+      return;
+    }
+
+    const { data: existing } = await supabase
+      .from("reactions")
+      .select("id, type")
+      .eq("post_slug", slug)
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if (existing && existing.type === type) {
+      await supabase.from("reactions").delete().eq("id", existing.id);
+    } else if (existing) {
+      await supabase.from("reactions").update({ type }).eq("id", existing.id);
+    } else {
+      await supabase.from("reactions").insert({
+        post_slug: slug,
+        user_id: session.user.id,
+        type,
+      });
+    }
+
+    message.textContent = "";
+    await loadCounts();
+    await highlightUserReaction();
+  }
+
+  likeBtn?.addEventListener("click", () => react("like"));
+  dislikeBtn?.addEventListener("click", () => react("dislike"));
+
+  loadCounts();
+  highlightUserReaction();
+</script>
+
+<style>
+  .reactions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    color: #f5f5f7;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .reaction-btn:hover {
+    border-color: #8aa7ff;
+  }
+
+  .reaction-btn.active {
+    background: rgba(138, 167, 255, 0.15);
+    border-color: #8aa7ff;
+    color: #8aa7ff;
+  }
+
+  .reaction-message {
+    font-size: 13px;
+    color: #858a95;
+  }
+</style>

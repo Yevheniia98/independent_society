@@ -1,7 +1,9 @@
 ---
 import "../styles/global.css";
+import AuthStatus from "../components/AuthStatus.astro";
 const { title = "Independent Society", description = "Stories for freelancers, founders and small teams building independent businesses.", canonical } = Astro.props;
 const url = canonical ?? Astro.url.href;
+
 ---
 <!doctype html>
 <html lang="en">
@@ -28,6 +30,7 @@ const url = canonical ?? Astro.url.href;
           <a href="/blog/">Stories</a>
           <a href="/#categories">Categories</a>
           <a href="/about/">About</a>
+          <AuthStatus />
         </nav>
       </div>
     </header>
