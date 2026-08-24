@@ -44,8 +44,32 @@ const url = canonical ?? Astro.url.href;
       <div class="container">
         Independent Society — practical stories from freelancers, founders and small teams.
         <p>© 2026</p>
+        <nav class="footer-links">
+          <a href="/contact/">Contact</a>
+          <a href="/privacy-policy/">Privacy Policy</a>
+        </nav>
       </div>
-      
     </footer>
   </body>
 </html>
+
+<style>
+  .footer-links {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    color: inherit;
+    opacity: 0.7;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .footer-links a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+</style>
