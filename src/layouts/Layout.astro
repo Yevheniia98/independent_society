@@ -1,13 +1,17 @@
 ---
 import "../styles/global.css";
 import AuthStatus from "../components/AuthStatus.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
 const { title = "Independent Society", description = "Stories for freelancers, founders and small teams building independent businesses.", canonical } = Astro.props;
 const url = canonical ?? Astro.url.href;
-
 ---
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline>
+      const theme = localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
@@ -31,14 +35,16 @@ const url = canonical ?? Astro.url.href;
           <a href="/#categories">Categories</a>
           <a href="/about/">About</a>
           <AuthStatus />
+          <ThemeToggle />
         </nav>
       </div>
     </header>
     <main><slot /></main>
     <footer>
       <div class="container">
-        Independent Society — practical stories from freelancers, founders and small teams. 2026
+        Independent Society — practical stories from freelancers, founders and small teams.
       </div>
+      <p>© 2026</p>
     </footer>
   </body>
 </html>

@@ -102,8 +102,8 @@ const { postSlug } = Astro.props;
     gap: 12px;
     margin: 32px 0;
     padding: 16px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
 
   .reaction-btn {
@@ -111,10 +111,10 @@ const { postSlug } = Astro.props;
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--panel);
+    border: 1px solid var(--line);
     border-radius: 999px;
-    color: #f5f5f7;
+    color: var(--text);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -125,13 +125,13 @@ const { postSlug } = Astro.props;
   }
 
   .reaction-btn.active {
-    background: rgba(138, 167, 255, 0.15);
+    background: color-mix(in srgb, #8aa7ff 15%, transparent);
     border-color: #8aa7ff;
     color: #8aa7ff;
   }
 
   .reaction-message {
     font-size: 13px;
-    color: #858a95;
+    color: var(--muted);
   }
 </style>

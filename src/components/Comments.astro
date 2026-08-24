@@ -133,25 +133,25 @@ const { postSlug } = Astro.props;
   }
 
   function attachDeleteHandlers() {
-  const deleteButtons = list.querySelectorAll<HTMLButtonElement>(".comment-delete-btn");
+    const deleteButtons = list.querySelectorAll<HTMLButtonElement>(".comment-delete-btn");
 
-  deleteButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const confirmed = confirm("Delete this comment?");
-      if (!confirmed) return;
+    deleteButtons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const confirmed = confirm("Delete this comment?");
+        if (!confirmed) return;
 
-      const commentId = btn.dataset.id!;
-      const { error } = await supabase
-        .from("comments")
-        .delete()
-        .eq("id", commentId);
+        const commentId = btn.dataset.id!;
+        const { error } = await supabase
+          .from("comments")
+          .delete()
+          .eq("id", commentId);
 
-      if (!error) {
-        await loadComments();
-      }
+        if (!error) {
+          await loadComments();
+        }
+      });
     });
-  });
-}
+  }
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -189,86 +189,102 @@ const { postSlug } = Astro.props;
 
 <style>
   .comments {
-    margin: 48px 0;
+    margin: 56px 0;
   }
 
   .comments h3 {
-    color: #f5f5f7;
-    font-size: 20px;
-    margin-bottom: 20px;
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
   }
 
   .comment-form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     margin-bottom: 8px;
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
   }
 
   .comment-form textarea {
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    color: #fff;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--text);
     font-size: 14px;
     font-family: inherit;
     resize: vertical;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .comment-form textarea:focus {
     outline: none;
     border-color: #8aa7ff;
+    box-shadow: 0 0 0 3px color-mix(in srgb, #8aa7ff 15%, transparent);
   }
 
   .comment-form button {
     align-self: flex-start;
-    padding: 10px 20px;
+    padding: 10px 22px;
     background: #8aa7ff;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     color: #08090d;
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: transform 0.15s ease, background 0.2s ease;
   }
 
   .comment-form button:hover {
     background: #c2d1ff;
+    transform: translateY(-1px);
+  }
+
+  .comment-form button:active {
+    transform: translateY(0);
   }
 
   .comment-message {
     color: #8aa7ff;
     font-size: 13px;
+    font-weight: 500;
     min-height: 18px;
-    margin-bottom: 24px;
+    margin: 4px 0 28px 4px;
   }
 
   .comment-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 12px;
   }
 
   .comment-list :global(.comment) {
     display: flex;
     gap: 14px;
-    padding: 20px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 18px 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    transition: border-color 0.2s ease;
   }
 
-  .comment-list :global(.comment:last-child) {
-    border-bottom: none;
+  .comment-list :global(.comment:hover) {
+    border-color: color-mix(in srgb, #8aa7ff 30%, var(--line));
   }
 
   .comment-list :global(.comment-avatar) {
     flex-shrink: 0;
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: rgba(138, 167, 255, 0.15);
+    background: color-mix(in srgb, #8aa7ff 15%, transparent);
     color: #8aa7ff;
     display: flex;
     align-items: center;
@@ -284,66 +300,71 @@ const { postSlug } = Astro.props;
 
   .comment-list :global(.comment-header) {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .comment-list :global(.comment-author) {
     font-weight: 600;
-    color: #f5f5f7;
+    color: var(--text);
     font-size: 14px;
   }
 
   .comment-list :global(.comment-date) {
-    color: #858a95;
+    color: var(--muted);
     font-size: 12px;
   }
 
   .comment-list :global(.comment-content) {
-    color: #c8cbd2;
-    font-size: 14px;
+    color: var(--text);
+    opacity: 0.82;
+    font-size: 14.5px;
     line-height: 1.6;
   }
 
-  .comment-list :global(.comment-edit-btn) {
+  .comment-list :global(.comment-edit-btn),
+  .comment-list :global(.comment-delete-btn) {
     margin-left: auto;
     background: none;
     border: none;
-    color: #8aa7ff;
     font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    padding: 0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
   }
 
-  .comment-list :global(.comment-edit-btn:hover) {
-    text-decoration: underline;
+  .comment-list :global(.comment-edit-btn) {
+    color: #8aa7ff;
+    margin-left: auto;
   }
 
   .comment-list :global(.comment-delete-btn) {
-  background: none;
-  border: none;
-  color: #e57373;
-  font-size: 12px;
-  cursor: pointer;
-  padding: 0;
-}
+    color: #e57373;
+    margin-left: 0;
+  }
 
-.comment-list :global(.comment-delete-btn:hover) {
-  text-decoration: underline;
-}
+  .comment-list :global(.comment-edit-btn:hover) {
+    background: color-mix(in srgb, #8aa7ff 12%, transparent);
+  }
+
+  .comment-list :global(.comment-delete-btn:hover) {
+    background: color-mix(in srgb, #e57373 12%, transparent);
+  }
 
   .comment-list :global(.comment-edit-textarea) {
     width: 100%;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 14px;
+    background: var(--bg);
     border: 1px solid #8aa7ff;
-    border-radius: 8px;
-    color: #fff;
+    border-radius: 10px;
+    color: var(--text);
     font-size: 14px;
     font-family: inherit;
     resize: vertical;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     box-sizing: border-box;
   }
 
@@ -353,10 +374,10 @@ const { postSlug } = Astro.props;
   }
 
   .comment-list :global(.comment-save-btn) {
-    padding: 6px 14px;
+    padding: 7px 16px;
     background: #8aa7ff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #08090d;
     font-size: 12px;
     font-weight: 600;
@@ -364,18 +385,22 @@ const { postSlug } = Astro.props;
   }
 
   .comment-list :global(.comment-cancel-btn) {
-    padding: 6px 14px;
+    padding: 7px 16px;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    color: #858a95;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
     font-size: 12px;
     cursor: pointer;
   }
 
   .no-comments {
-    color: #858a95;
+    color: var(--muted);
     font-size: 14px;
-    padding: 12px 0;
+    padding: 24px;
+    text-align: center;
+    background: var(--panel);
+    border: 1px dashed var(--line);
+    border-radius: 14px;
   }
 </style>
