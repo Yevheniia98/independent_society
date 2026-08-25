@@ -3,7 +3,7 @@ title: "The Crab Bucket Effect: Why Your Environment Sabotages Your Growth (and 
 description: "An expanded look at how leveling up triggers resistance in your social circle, why people try to pull you back down, and how to navigate the crab mentality as a builder or freelancer."
 date: "2026-08-24"
 author: "Jessica"
-readingTime: "7 min read"
+readingTime: "5 min read"
 category: "Self-improvement"
 cover: "/images/crabs.png"
 tags:

@@ -4,7 +4,7 @@ description: "Why benchmark scores don't always matter in real projects, and how
 date: 2026-08-20
 category: "AI"
 author: "Adam"
-readingTime: "5 min read"
+readingTime: "6 min read"
 tags: ["AI", "Coding", "Claude", "ChatGPT", "Gemini"]
 cover: "/images/ai.jpg"
 ---
