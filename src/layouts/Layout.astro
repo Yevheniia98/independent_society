@@ -27,11 +27,14 @@ const url = canonical ?? Astro.url.href;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
-  rel="stylesheet"
-/>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6483070812951334"
-     crossorigin="anonymous"></script>
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6483070812951334"
+      crossorigin="anonymous"></script>
   </head>
   <body>
     <header class="site-header">
@@ -39,8 +42,18 @@ const url = canonical ?? Astro.url.href;
         <a class="logo" href="/">
           <img src="/images/ISG.png" alt="Independent Society" style="height: 50px;" />
         </a>
-        <nav class="nav-links">
+
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <nav class="nav-links" id="nav-links">
           <a href="/blog/">Stories</a>
+          <a href="/independents/">Independents</a>
           <a href="/#categories">Categories</a>
           <a href="/about/">About</a>
           <AuthStatus />
@@ -59,10 +72,45 @@ const url = canonical ?? Astro.url.href;
         </nav>
       </div>
     </footer>
+
+    <script>
+      const toggle = document.getElementById("menu-toggle");
+      const links = document.getElementById("nav-links");
+
+      toggle?.addEventListener("click", () => {
+        const isOpen = links?.classList.toggle("open");
+        toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+
+      // Close the menu when a nav link is tapped, so it doesn't stay open
+      // after navigating.
+      links?.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          links.classList.remove("open");
+          toggle?.setAttribute("aria-expanded", "false");
+        });
+      });
+    </script>
   </body>
 </html>
 
 <style>
+  .menu-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 8px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .menu-toggle:hover {
+    border-color: #8aa7ff;
+  }
+
   footer .footer-links {
     display: flex;
     flex-wrap: wrap;
@@ -90,5 +138,30 @@ const url = canonical ?? Astro.url.href;
   footer .footer-links a:hover {
     opacity: 1;
     text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: flex;
+    }
+
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 72px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 24px 20px 28px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-links.open {
+      display: flex;
+    }
   }
 </style>
