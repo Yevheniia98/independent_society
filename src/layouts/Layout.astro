@@ -43,22 +43,30 @@ const url = canonical ?? Astro.url.href;
           <img src="/images/ISG.png" alt="Independent Society" style="height: 50px;" />
         </a>
 
-        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
+        <div class="nav-right">
+          <nav class="nav-links" id="nav-links">
+            <a href="/blog/">Stories</a>
+            <a href="/independents/">Independents</a>
+            <a href="/#categories">Categories</a>
+            <a href="/about/">About</a>
+            <div class="nav-links-divider"></div>
+            <AuthStatus />
+          </nav>
 
-        <nav class="nav-links" id="nav-links">
-          <a href="/blog/">Stories</a>
-          <a href="/independents/">Independents</a>
-          <a href="/#categories">Categories</a>
-          <a href="/about/">About</a>
-          <AuthStatus />
           <ThemeToggle />
-        </nav>
+
+          <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">
+            <svg class="icon-open" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            <svg class="icon-close" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="5" y1="5" x2="19" y2="19"></line>
+              <line x1="19" y1="5" x2="5" y2="19"></line>
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
     <main><slot /></main>
@@ -79,14 +87,14 @@ const url = canonical ?? Astro.url.href;
 
       toggle?.addEventListener("click", () => {
         const isOpen = links?.classList.toggle("open");
+        toggle.classList.toggle("open", !!isOpen);
         toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
       });
 
-      // Close the menu when a nav link is tapped, so it doesn't stay open
-      // after navigating.
       links?.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", () => {
           links.classList.remove("open");
+          toggle?.classList.remove("open");
           toggle?.setAttribute("aria-expanded", "false");
         });
       });
@@ -95,20 +103,46 @@ const url = canonical ?? Astro.url.href;
 </html>
 
 <style>
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
   .menu-toggle {
     display: none;
+    position: relative;
     background: none;
     border: 1px solid var(--line);
     border-radius: 10px;
     color: var(--text);
-    padding: 8px;
+    width: 38px;
+    height: 38px;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    flex-shrink: 0;
   }
 
   .menu-toggle:hover {
     border-color: #8aa7ff;
+  }
+
+  .menu-toggle .icon-open,
+  .menu-toggle .icon-close {
+    position: absolute;
+  }
+
+  .menu-toggle .icon-close {
+    display: none;
+  }
+
+  .menu-toggle.open .icon-open {
+    display: none;
+  }
+
+  .menu-toggle.open .icon-close {
+    display: block;
   }
 
   footer .footer-links {
@@ -152,16 +186,42 @@ const url = canonical ?? Astro.url.href;
       left: 0;
       right: 0;
       flex-direction: column;
-      align-items: flex-start;
-      gap: 18px;
-      padding: 24px 20px 28px;
-      background: var(--bg);
+      align-items: stretch;
+      gap: 4px;
+      margin: 0;
+      padding: 12px 20px 24px;
+      background: var(--panel);
       border-bottom: 1px solid var(--line);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
     }
 
     .nav-links.open {
       display: flex;
+    }
+
+    .nav-links a {
+      padding: 12px 4px;
+      font-size: 1.02rem;
+      border-radius: 10px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .nav-links a:hover {
+      background: color-mix(in srgb, #8aa7ff 10%, transparent);
+      color: #8aa7ff;
+    }
+
+    .nav-links-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 10px 4px 12px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .nav-links-divider {
+      display: none;
     }
   }
 </style>
