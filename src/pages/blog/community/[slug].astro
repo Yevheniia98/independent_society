@@ -1,0 +1,115 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import Reactions from "../../../components/Reactions.astro";
+import Comments from "../../../components/Comments.astro";
+import ShareButtons from "../../../components/ShareButtons.astro";
+import { supabase } from "../../../lib/supabase";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+const { data: story, error } = await supabase
+  .from("stories")
+  .select("*")
+  .eq("slug", slug)
+  .eq("hidden", false)
+  .single();
+
+const canonicalUrl = new URL(`/blog/community/${slug}/`, Astro.site ?? Astro.url).href;
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function paragraphs(content: string) {
+  return content.split(/\n\s*\n/).map((p) => p.trim());
+}
+---
+
+<Layout
+  title={story ? `${story.title} — Independent Society` : "Story — Independent Society"}
+  description={story?.description ?? "A story from the Independent Society community."}
+>
+  {!story || error ? (
+    <div class="container article-wrap">
+      <p class="empty">Story not found.</p>
+    </div>
+  ) : (
+    <article class="container article-wrap" id="story-container">
+      <div class="eyebrow">{story.category || "Community"} · Community story</div>
+      <h1>{story.title}</h1>
+
+      {story.cover_url && (
+        <img src={story.cover_url} alt={story.title} class="cover-image" />
+      )}
+
+      {story.description && <p class="article-lead">{story.description}</p>}
+
+      <div class="article-meta">
+        {story.author_name} · {formatDate(story.created_at)}
+        <span id="edit-slot" data-slug={slug}></span>
+      </div>
+
+      <div class="prose">
+        {paragraphs(story.content).map((p) => (
+          <p set:html={p.replace(/\n/g, "<br>")} />
+        ))}
+      </div>
+
+      <Reactions postSlug={slug} />
+      <ShareButtons url={canonicalUrl} title={story.title} />
+      <Comments postSlug={slug} />
+    </article>
+  )}
+</Layout>
+
+<script>
+  // Progressive enhancement only: show an "Edit" link if the visitor is
+  // signed in as this story's author. Everything else on the page is
+  // already server-rendered above.
+  import { supabase } from "../../../lib/supabase";
+
+  const slot = document.querySelector("#edit-slot") as HTMLElement;
+  const slug = slot?.dataset.slug;
+
+  async function checkOwner() {
+    if (!slug) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const { data: story } = await supabase
+      .from("stories")
+      .select("user_id")
+      .eq("slug", slug)
+      .single();
+
+    if (story && story.user_id === session.user.id && slot) {
+      slot.innerHTML = `<a href="/blog/edit/${slug}/" class="edit-story-link">Edit</a>`;
+    }
+  }
+
+  checkOwner();
+</script>
+
+<style>
+  .empty {
+    color: var(--muted);
+    padding: 60px 0;
+  }
+
+  #story-container :global(.edit-story-link) {
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid var(--line);
+    color: #8aa7ff;
+  }
+
+  #story-container :global(.edit-story-link:hover) {
+    text-decoration: underline;
+  }
+</style>

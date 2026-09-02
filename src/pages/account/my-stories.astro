@@ -1,0 +1,194 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="My Stories — Independent Society" description="Manage the stories you've published.">
+  <div class="container article-wrap" style="padding-top: 60px;">
+    <div class="eyebrow">Account</div>
+    <h1 style="font-size: clamp(2rem, 5vw, 3rem);">My Stories</h1>
+    <p class="article-lead">Everything you've published, in one place.</p>
+
+    <a href="/blog/write/" class="write-btn">+ Write a new story</a>
+
+    <div id="signed-out-notice" class="notice" hidden>
+      <p>You need to sign in with Google to see your stories.</p>
+    </div>
+
+    <div id="stories-list" class="stories-list"></div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const signedOutNotice = document.querySelector("#signed-out-notice") as HTMLElement;
+  const list = document.querySelector("#stories-list") as HTMLElement;
+
+  function escapeHtml(str: string) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML;
+  }
+
+  function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  async function loadStories(userId: string) {
+    const { data, error } = await supabase
+      .from("stories")
+      .select("id, slug, title, hidden, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      list.innerHTML = `<p class="empty">You haven't written any stories yet.</p>`;
+      return;
+    }
+
+    list.innerHTML = data
+      .map(
+        (s) => `
+      <div class="story-row" data-id="${s.id}">
+        <div>
+          <a href="/blog/community/${escapeHtml(s.slug)}/" class="story-title">${escapeHtml(s.title)}</a>
+          <div class="story-meta">${formatDate(s.created_at)}${s.hidden ? ' · <span class="hidden-tag">Hidden by moderator</span>' : ""}</div>
+        </div>
+        <div class="story-actions">
+          <a href="/blog/edit/${escapeHtml(s.slug)}/" class="edit-btn">Edit</a>
+          <button class="delete-btn" data-id="${s.id}">Delete</button>
+        </div>
+      </div>
+    `
+      )
+      .join("");
+
+    list.querySelectorAll<HTMLButtonElement>(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Delete this story? This can't be undone.")) return;
+        const { error } = await supabase.from("stories").delete().eq("id", btn.dataset.id);
+        if (!error) {
+          btn.closest(".story-row")?.remove();
+        }
+      });
+    });
+  }
+
+  async function init() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      signedOutNotice.hidden = false;
+      return;
+    }
+
+    await loadStories(session.user.id);
+  }
+
+  init();
+</script>
+
+<style>
+  .write-btn {
+    display: inline-block;
+    margin: 24px 0 40px;
+    padding: 10px 20px;
+    background: #8aa7ff;
+    border-radius: 10px;
+    color: #08090d;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .write-btn:hover {
+    background: #c2d1ff;
+  }
+
+  .notice {
+    padding: 24px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    color: var(--muted);
+    margin: 32px 0;
+  }
+
+  .stories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 80px;
+  }
+
+  .stories-list :global(.story-row) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel);
+  }
+
+  .stories-list :global(.story-title) {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .stories-list :global(.story-title:hover) {
+    color: #8aa7ff;
+  }
+
+  .stories-list :global(.story-meta) {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+
+  .stories-list :global(.hidden-tag) {
+    color: #e57373;
+  }
+
+  .stories-list :global(.story-actions) {
+    display: flex;
+    gap: 8px;
+  }
+
+  .stories-list :global(.edit-btn) {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+
+  .stories-list :global(.edit-btn:hover) {
+    border-color: #8aa7ff;
+    color: #8aa7ff;
+  }
+
+  .stories-list :global(.delete-btn) {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: #e57373;
+    padding: 7px 14px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .stories-list :global(.delete-btn:hover) {
+    border-color: #e57373;
+    background: color-mix(in srgb, #e57373 10%, transparent);
+  }
+
+  .empty {
+    color: var(--muted);
+    padding: 40px 0;
+  }
+</style>

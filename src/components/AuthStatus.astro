@@ -8,9 +8,21 @@
     </svg>
     Sign in with Google
   </button>
+
   <div id="auth-user" class="auth-user" hidden>
-    <span id="auth-email"></span>
-    <button id="auth-signout" class="auth-signout">Sign out</button>
+    <button id="account-toggle" class="account-toggle">
+      <span id="auth-email"></span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+    <div id="account-menu" class="account-menu">
+      <a href="/blog/write/">Write a Story</a>
+      <a href="/account/my-stories/">My Stories</a>
+      <a href="/independents/submit/">My Profile</a>
+      <div class="account-menu-divider"></div>
+      <button id="auth-signout" class="account-menu-signout">Sign out</button>
+    </div>
   </div>
 </div>
 
@@ -20,6 +32,8 @@
   const signinBtn = document.querySelector("#auth-signin") as HTMLElement;
   const userBox = document.querySelector("#auth-user") as HTMLElement;
   const emailSpan = document.querySelector("#auth-email") as HTMLElement;
+  const accountToggle = document.querySelector("#account-toggle") as HTMLElement;
+  const accountMenu = document.querySelector("#account-menu") as HTMLElement;
   const signoutBtn = document.querySelector("#auth-signout") as HTMLElement;
 
   async function updateAuthUI() {
@@ -38,14 +52,23 @@
   signinBtn?.addEventListener("click", async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: window.location.href,
-      },
+      options: { redirectTo: window.location.href },
     });
+  });
+
+  accountToggle?.addEventListener("click", () => {
+    accountMenu?.classList.toggle("open");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!userBox.contains(e.target as Node)) {
+      accountMenu?.classList.remove("open");
+    }
   });
 
   signoutBtn?.addEventListener("click", async () => {
     await supabase.auth.signOut();
+    accountMenu?.classList.remove("open");
     updateAuthUI();
   });
 
@@ -57,6 +80,7 @@
   .auth-status {
     display: flex;
     align-items: center;
+    position: relative;
   }
 
   .auth-signin-btn {
@@ -82,24 +106,79 @@
 
   .auth-user {
     display: none;
-    align-items: center;
-    gap: 12px;
-    font-size: 14px;
-    color: #f5f5f7;
+    position: relative;
   }
 
-  .auth-signout {
+  .account-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--line);
     border-radius: 8px;
-    color: #858a95;
+    color: var(--text);
     padding: 6px 12px;
     font-size: 13px;
+    font-family: inherit;
     cursor: pointer;
   }
 
-  .auth-signout:hover {
+  .account-toggle:hover {
     border-color: #8aa7ff;
+  }
+
+  .account-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+    z-index: 30;
+  }
+
+  .account-menu.open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .account-menu a,
+  .account-menu-signout {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13.5px;
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .account-menu a:hover,
+  .account-menu-signout:hover {
+    background: color-mix(in srgb, #8aa7ff 10%, transparent);
     color: #8aa7ff;
+  }
+
+  .account-menu-signout {
+    color: #e57373;
+  }
+
+  .account-menu-signout:hover {
+    background: color-mix(in srgb, #e57373 10%, transparent);
+    color: #e57373;
+  }
+
+  .account-menu-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 6px 4px;
   }
 </style>

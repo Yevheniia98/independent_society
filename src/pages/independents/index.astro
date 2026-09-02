@@ -1,0 +1,172 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Independents — Independent Society"
+  description="Meet the people building independently — solo founders, freelancers, and creators sharing what they're working on."
+>
+  <div class="container article-wrap" style="padding-top: 60px;">
+    <div class="eyebrow">Community</div>
+    <div class="independents-heading-row">
+      <div>
+        <h1 style="font-size: clamp(2.4rem, 6vw, 4rem); margin-bottom: 0;">Independents</h1>
+      </div>
+      <a href="/independents/submit/" class="add-profile-btn">+ Add Your Profile</a>
+    </div>
+    <p class="article-lead">
+      Real people building on their own terms — freelancers, solo founders, and creators.
+      See what they're working on, how long they've been at it, and how to find them.
+    </p>
+
+    <div id="independents-grid" class="independents-grid">
+      <p class="loading-msg">Loading profiles…</p>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  const grid = document.querySelector("#independents-grid") as HTMLElement;
+
+  function escapeHtml(str: string) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML;
+  }
+
+  async function loadProfiles() {
+    const { data, error } = await supabase
+      .from("independents")
+      .select("slug, name, photo_url, city, country, role, currently_building, independent_since")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      grid.innerHTML = `<p class="empty">No profiles yet — check back soon.</p>`;
+      return;
+    }
+
+    grid.innerHTML = data
+      .map((p) => {
+        const location = [p.city, p.country].filter(Boolean).join(", ");
+        return `
+        <a href="/independents/${escapeHtml(p.slug)}/" class="independent-card">
+          <div class="independent-avatar">
+            ${
+              p.photo_url
+                ? `<img src="${escapeHtml(p.photo_url)}" alt="${escapeHtml(p.name)}" />`
+                : `<span>${escapeHtml(p.name).slice(0, 2).toUpperCase()}</span>`
+            }
+          </div>
+          <div class="independent-info">
+            <div class="independent-name">${escapeHtml(p.name)}</div>
+            ${location ? `<div class="independent-location">${escapeHtml(location)}</div>` : ""}
+            ${p.role ? `<div class="independent-role">${escapeHtml(p.role)}</div>` : ""}
+            ${p.currently_building ? `<div class="independent-building">${escapeHtml(p.currently_building)}</div>` : ""}
+            ${p.independent_since ? `<div class="independent-since">Independent since ${p.independent_since}</div>` : ""}
+          </div>
+        </a>
+      `;
+      })
+      .join("");
+  }
+
+  loadProfiles();
+</script>
+
+<style>
+  .independents-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .add-profile-btn {
+    padding: 10px 20px;
+    background: #8aa7ff;
+    border-radius: 10px;
+    color: #08090d;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+  }
+
+  .add-profile-btn:hover {
+    background: #c2d1ff;
+  }
+
+  .independents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+    margin: 40px 0 80px;
+  }
+
+  .loading-msg,
+  .empty {
+    color: var(--muted);
+    padding: 40px 0;
+  }
+
+  .independents-grid :global(.independent-card) {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--panel) 76%, transparent);
+    transition: 0.2s ease;
+  }
+
+  .independents-grid :global(.independent-card:hover) {
+    transform: translateY(-3px);
+    border-color: #44444a;
+  }
+
+  .independents-grid :global(.independent-avatar) {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: color-mix(in srgb, #8aa7ff 15%, transparent);
+    color: #8aa7ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .independents-grid :global(.independent-avatar img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .independents-grid :global(.independent-name) {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 1.05rem;
+  }
+
+  .independents-grid :global(.independent-location),
+  .independents-grid :global(.independent-role),
+  .independents-grid :global(.independent-building) {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .independents-grid :global(.independent-since) {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+</style>

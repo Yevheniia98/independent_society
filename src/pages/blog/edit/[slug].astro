@@ -1,0 +1,252 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+
+export const prerender = false;
+---
+
+<Layout title="Edit Story — Independent Society" description="Edit your story.">
+  <div class="container article-wrap" style="padding-top: 60px; max-width: 720px;">
+    <div class="eyebrow">Community</div>
+    <h1 style="font-size: clamp(2rem, 5vw, 3rem);">Edit Story</h1>
+
+    <div id="loading-msg" class="notice"><p>Loading your story…</p></div>
+    <div id="signed-out-notice" class="notice" hidden><p>You need to sign in with Google to edit stories.</p></div>
+    <div id="not-owner-notice" class="notice" hidden><p>You can only edit your own stories.</p></div>
+
+    <form id="story-form" class="story-form" hidden>
+      <label>
+        Title *
+        <input type="text" id="f-title" required maxlength="120" />
+      </label>
+
+      <label>
+        Short description <span class="optional">(shown in the feed, optional)</span>
+        <input type="text" id="f-description" maxlength="200" />
+      </label>
+
+      <label>
+        Category <span class="optional">(optional)</span>
+        <input type="text" id="f-category" placeholder="e.g. Business, Self-improvement" maxlength="60" />
+      </label>
+
+      <label>
+        Cover image <span class="optional">(optional — leave empty to keep the current one)</span>
+        <input type="file" id="f-cover" accept="image/png,image/jpeg,image/webp" />
+      </label>
+
+      <label>
+        Your story *
+        <textarea id="f-content" rows="14" required></textarea>
+      </label>
+
+      <button type="submit" id="submit-btn">Save changes</button>
+      <p id="form-message" class="form-message"></p>
+    </form>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from "../../../lib/supabase";
+
+  const loadingMsg = document.querySelector("#loading-msg") as HTMLElement;
+  const signedOutNotice = document.querySelector("#signed-out-notice") as HTMLElement;
+  const notOwnerNotice = document.querySelector("#not-owner-notice") as HTMLElement;
+  const form = document.querySelector("#story-form") as HTMLFormElement;
+  const message = document.querySelector("#form-message") as HTMLElement;
+  const submitBtn = document.querySelector("#submit-btn") as HTMLButtonElement;
+
+  const slug = window.location.pathname.split("/").filter(Boolean).pop();
+  let storyId: string;
+
+  function showError(text: string) {
+    message.textContent = text;
+    message.className = "form-message error";
+  }
+
+  async function init() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      loadingMsg.hidden = true;
+      signedOutNotice.hidden = false;
+      return;
+    }
+
+    const { data: story, error } = await supabase
+      .from("stories")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if (error || !story) {
+      loadingMsg.innerHTML = `<p>Story not found.</p>`;
+      return;
+    }
+
+    if (story.user_id !== session.user.id) {
+      loadingMsg.hidden = true;
+      notOwnerNotice.hidden = false;
+      return;
+    }
+
+    storyId = story.id;
+    (document.querySelector("#f-title") as HTMLInputElement).value = story.title;
+    (document.querySelector("#f-description") as HTMLInputElement).value = story.description || "";
+    (document.querySelector("#f-category") as HTMLInputElement).value = story.category || "";
+    (document.querySelector("#f-content") as HTMLTextAreaElement).value = story.content;
+
+    loadingMsg.hidden = true;
+    form.hidden = false;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      message.textContent = "";
+      message.className = "form-message";
+
+      const title = (document.querySelector("#f-title") as HTMLInputElement).value.trim();
+      const content = (document.querySelector("#f-content") as HTMLTextAreaElement).value.trim();
+
+      if (!title || !content) {
+        showError("Please add a title and your story text.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Saving…";
+
+      try {
+        let coverUrl: string | undefined;
+        const fileInput = document.querySelector("#f-cover") as HTMLInputElement;
+        const file = fileInput.files?.[0];
+
+        if (file) {
+          const ext = file.name.split(".").pop();
+          const path = `${session.user.id}/story-${Date.now()}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(path, file, { upsert: true });
+
+          if (uploadError) throw new Error(`Cover upload failed: ${uploadError.message}`);
+
+          const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
+          coverUrl = publicUrlData.publicUrl;
+        }
+
+        const payload: Record<string, unknown> = {
+          title,
+          description: (document.querySelector("#f-description") as HTMLInputElement).value.trim() || null,
+          category: (document.querySelector("#f-category") as HTMLInputElement).value.trim() || null,
+          content,
+        };
+        if (coverUrl) payload.cover_url = coverUrl;
+
+        const { error: updateError } = await supabase.from("stories").update(payload).eq("id", storyId);
+
+        if (updateError) throw new Error(updateError.message);
+
+        window.location.href = `/blog/community/${slug}/`;
+      } catch (err) {
+        console.error(err);
+        showError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save changes";
+      }
+    });
+  }
+
+  init();
+</script>
+
+<style>
+  .notice {
+    padding: 24px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    color: var(--muted);
+    margin: 32px 0;
+  }
+
+  .story-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: 32px 0 80px;
+  }
+
+  .story-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .story-form .optional {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.8rem;
+  }
+
+  .story-form input,
+  .story-form textarea {
+    padding: 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 400;
+  }
+
+  .story-form textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .story-form input[type="file"] {
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+
+  .story-form input:focus,
+  .story-form textarea:focus {
+    outline: none;
+    border-color: #8aa7ff;
+    box-shadow: 0 0 0 3px color-mix(in srgb, #8aa7ff 15%, transparent);
+  }
+
+  .story-form button {
+    align-self: flex-start;
+    padding: 12px 26px;
+    background: #8aa7ff;
+    border: none;
+    border-radius: 10px;
+    color: #08090d;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  .story-form button:hover {
+    background: #c2d1ff;
+  }
+
+  .story-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .form-message {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 4px 0 0;
+  }
+
+  .form-message.error {
+    color: #e57373;
+  }
+</style>
